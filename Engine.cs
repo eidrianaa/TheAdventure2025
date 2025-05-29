@@ -22,6 +22,9 @@ public class Engine
 
     private DateTimeOffset _lastUpdate = DateTimeOffset.Now;
 
+    private enum GameState { Playing, GameOver }
+    private GameState _currentState = GameState.Playing;
+
     public Engine(GameRenderer renderer, Input input)
     {
         _renderer = renderer;
@@ -79,6 +82,19 @@ public class Engine
 
     public void ProcessFrame()
     {
+        if (_currentState == GameState.GameOver)
+        {
+            if (_input.IsKeyYPressed())
+            {
+                RestartGame();
+            }
+            else if (_input.IsKeyNPressed())
+            {
+                Environment.Exit(0);
+            }
+            return;
+        }
+
         var currentTime = DateTimeOffset.Now;
         var msSinceLastFrame = (currentTime - _lastUpdate).TotalMilliseconds;
         _lastUpdate = currentTime;
@@ -100,7 +116,7 @@ public class Engine
         {
             _player.Attack();
         }
-        
+
         _scriptEngine.ExecuteAll(this);
 
         if (addBomb)
@@ -114,11 +130,20 @@ public class Engine
         _renderer.SetDrawColor(0, 0, 0, 255);
         _renderer.ClearScreen();
 
-        var playerPosition = _player!.Position;
-        _renderer.CameraLookAt(playerPosition.X, playerPosition.Y);
+        if (_player != null)
+        {
+            var playerPosition = _player.Position;
+            _renderer.CameraLookAt(playerPosition.X, playerPosition.Y);
+        }
 
         RenderTerrain();
         RenderAllObjects();
+
+        if (_currentState == GameState.GameOver)
+        {
+            _renderer.DrawText("Game Over!", 400, 200);
+            _renderer.DrawText("Start again? Y / N", 400, 230);
+        }
 
         _renderer.PresentFrame();
     }
@@ -149,7 +174,7 @@ public class Engine
             var deltaY = Math.Abs(_player.Position.Y - tempGameObject.Position.Y);
             if (deltaX < 32 && deltaY < 32)
             {
-                _player.GameOver();
+                _currentState = GameState.GameOver;
             }
         }
 
@@ -214,5 +239,16 @@ public class Engine
 
         TemporaryGameObject bomb = new(spriteSheet, 2.1, (worldCoords.X, worldCoords.Y));
         _gameObjects.Add(bomb.Id, bomb);
+    }
+
+    private void RestartGame()
+    {
+        _gameObjects.Clear();
+        _loadedTileSets.Clear();
+        _tileIdMap.Clear();
+        _currentLevel = new();
+        _player = null;
+        SetupWorld();
+        _currentState = GameState.Playing;
     }
 }

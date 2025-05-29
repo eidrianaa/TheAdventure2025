@@ -110,4 +110,24 @@ public unsafe class GameRenderer
     {
         _sdl.RenderPresent(_renderer);
     }
+
+
+
+    public void DrawText(string text, int x, int y)
+{
+    SetDrawColor(255, 255, 255, 255); // alb
+
+    for (int i = 0; i < text.Length; i++)
+    {
+        int px = x + i * 10; // spațiere între caractere
+
+        // Desenăm o linie verticală pentru fiecare caracter, doar ca să „vedem” ceva
+        for (int j = 0; j < 10; j++)
+        {
+            _sdl.RenderDrawPoint(_renderer, px, y + j);
+        }
+    }
+}
+
+
 }
