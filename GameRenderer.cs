@@ -83,7 +83,8 @@ public unsafe class GameRenderer
     {
         if (_texturePointers.TryGetValue(textureId, out var imageTexture))
         {
-            var translatedDst = _camera.ToScreenCoordinates(dst);
+            var translatedDst = _camera.ToScreenRect(dst);
+
             _sdl.RenderCopyEx(_renderer, (Texture*)imageTexture, in src,
                 in translatedDst,
                 angle,
@@ -128,6 +129,12 @@ public unsafe class GameRenderer
         }
     }
 }
+
+public void ShakeCamera(int duration = 10)
+{
+    _camera.Shake(duration);
+}
+
 
 
 }

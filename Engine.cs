@@ -174,6 +174,7 @@ public class Engine
             var deltaY = Math.Abs(_player.Position.Y - tempGameObject.Position.Y);
             if (deltaX < 32 && deltaY < 32)
             {
+                _renderer.ShakeCamera();
                 _currentState = GameState.GameOver;
             }
         }
